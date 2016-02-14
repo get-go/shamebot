@@ -35,9 +35,8 @@ func lookupCommits(repo *git.Repository, oldRefs, newRefs []*git.Reference) ([]*
 	}
 
 	oid := new(git.Oid)
-	var commits []*git.Commit
+	commits := make(map[git.Oid]*git.Commit)
 
-	//TODO don't insert duplicate commits into slice
 	for _, ref := range newRefs {
 		walk.Reset()
 
@@ -52,11 +51,17 @@ func lookupCommits(repo *git.Repository, oldRefs, newRefs []*git.Reference) ([]*
 				//TODO may not want to ignore this
 				continue
 			}
-			commits = append(commits, commit)
+			commits[*commit.Id()] = commit
 		}
 	}
 
-	return commits, nil
+	commitsArray := make([]*git.Commit, len(commits))
+	i := 0
+	for k := range commits {
+		commitsArray[i] = commits[k]
+		i++
+	}
+	return commitsArray, nil
 }
 
 func getRemoteReferences(repo *git.Repository) ([]*git.Reference, error) {
