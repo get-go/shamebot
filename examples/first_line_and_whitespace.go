@@ -5,8 +5,8 @@ import (
 	"fmt"
 	git "github.com/libgit2/git2go"
 	"os"
-	"shamebot/parse"
-	"shamebot/poll"
+	"github.com/get-go/shamebot/parse"
+	"github.com/get-go/shamebot/poll"
 	"time"
 )
 
