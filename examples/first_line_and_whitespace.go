@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	git "github.com/libgit2/git2go"
-	"os"
 	"github.com/get-go/shamebot/parse"
 	"github.com/get-go/shamebot/poll"
+	git "github.com/libgit2/git2go"
+	"os"
 	"time"
 )
 
@@ -42,7 +42,10 @@ func main() {
 		for _, commit := range commits {
 			fmt.Println(commit.Author().Name, "pushed", commit.Id(), "\""+commit.Summary()+"\"", "to", remote.Url())
 			if parse.IsFirstLineTooLong(commit) {
-				fmt.Println(commit.Id(), "First line is too long.")
+				fmt.Println(commit.Id(), "First line of commit message is too long.")
+			}
+			if parse.DoesFirstLineEndWithPeriod(commit) {
+				fmt.Println(commit.Id(), "First line of commit message ends with a period.")
 			}
 			if parse.ContainsTrailingWhiteSpace(repo, commit) {
 				fmt.Println(commit.Id(), "Contains trailing whitespace")
