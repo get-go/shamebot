@@ -3,6 +3,7 @@ package parse
 import (
 	git "github.com/libgit2/git2go"
 	"golang.org/x/text/unicode/norm"
+	"regexp"
 	"strings"
 )
 
@@ -20,6 +21,20 @@ func IsFirstLineTooLong(commit *git.Commit) bool {
 	}
 
 	if characterCount > 50 {
+		rc = true
+	}
+
+	return rc
+}
+
+func DoesFirstLineEndWithPeriod(commit *git.Commit) bool {
+	rc := false
+
+	firstLine := strings.TrimRight(strings.Split(commit.Message(), "\n")[0], "\r")
+
+	contains, _ := regexp.MatchString(".*\\.$", firstLine)
+
+	if contains {
 		rc = true
 	}
 
