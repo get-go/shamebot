@@ -1,13 +1,15 @@
 package parse
 
 import (
-	git "github.com/libgit2/git2go"
 	"regexp"
 	"strings"
+
+	git "github.com/libgit2/git2go"
 )
 
-//TODO: Error handling
+//ContainsTrailingWhiteSpace checks for extra whitespace
 func ContainsTrailingWhiteSpace(repo *git.Repository, commit *git.Commit) bool {
+	//TODO: Error handling
 	changeset, _ := getChangeset(repo, commit)
 	rc := false
 	changesetLines := strings.Split(changeset, "\n")

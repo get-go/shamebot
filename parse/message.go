@@ -1,12 +1,14 @@
 package parse
 
 import (
-	git "github.com/libgit2/git2go"
-	"golang.org/x/text/unicode/norm"
 	"regexp"
 	"strings"
+
+	git "github.com/libgit2/git2go"
+	"golang.org/x/text/unicode/norm"
 )
 
+//IsFirstLineTooLong checks file line length
 func IsFirstLineTooLong(commit *git.Commit) bool {
 	rc := false
 
@@ -16,7 +18,7 @@ func IsFirstLineTooLong(commit *git.Commit) bool {
 	firstLineIter.InitString(norm.NFKD, firstLine)
 	characterCount := 0
 	for !firstLineIter.Done() {
-		characterCount += 1
+		characterCount++
 		firstLineIter.Next()
 	}
 
@@ -27,6 +29,7 @@ func IsFirstLineTooLong(commit *git.Commit) bool {
 	return rc
 }
 
+//DoesFirstLineEndWithPeriod checks for unwanted punctuation
 func DoesFirstLineEndWithPeriod(commit *git.Commit) bool {
 	rc := false
 
