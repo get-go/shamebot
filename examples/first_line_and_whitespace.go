@@ -8,6 +8,7 @@ import (
 	"github.com/get-go/shamebot/poll"
 	git "github.com/libgit2/git2go"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -65,28 +66,65 @@ func main() {
 }
 
 //TODO: This doesn't belong in this file
-//TODO: This is SSH specific. Add support if remoteUrl is using https
 func getGithubUrl(commitId *git.Oid, remoteUrl string) (string, error) {
 	var githubUrl string
 	var returnError error
 
 	if strings.Contains(remoteUrl, "github.com") {
-		urlSplit := strings.Split(remoteUrl, ":")
-
-		if len(urlSplit) != 2 {
-			returnError = errors.New("getGithubUrl(): Unable to parse remoteUrl")
+		if strings.HasPrefix(remoteUrl, "https://") {
+			githubUrl, returnError = getGithubUrlHttps(commitId, remoteUrl)
 		} else {
-			var repoName string
-
-			if strings.HasSuffix(urlSplit[1], ".git") {
-				repoName = urlSplit[1][:len(urlSplit[1])-len(".git")]
-			} else {
-				repoName = urlSplit[1]
-			}
-
-			githubUrl = "https://www.github.com/" + repoName + "/commit/" + commitId.String()
+			githubUrl, returnError = getGithubUrlSSH(commitId, remoteUrl)
 		}
+	} else {
+		returnError = errors.New("Not a github url")
 	}
 
 	return githubUrl, returnError
+}
+
+func getGithubUrlHttps(commitId *git.Oid, remoteUrl string) (string, error) {
+	var githubUrl string
+	var returnError error
+
+	re := regexp.MustCompile("^https://.*github.com/")
+
+	repoName := re.ReplaceAllString(remoteUrl, "")
+
+	if strings.HasSuffix(repoName, ".git") {
+		repoName = repoName[:len(repoName)-len(".git")]
+	} else {
+		repoName = repoName
+	}
+
+	githubUrl = createGithurbUrl(repoName, commitId.String())
+
+	return githubUrl, returnError
+}
+
+func getGithubUrlSSH(commitId *git.Oid, remoteUrl string) (string, error) {
+	var githubUrl string
+	var returnError error
+
+	urlSplit := strings.Split(remoteUrl, ":")
+
+	if len(urlSplit) != 2 {
+		returnError = errors.New("getGithubUrl(): Unable to parse remoteUrl")
+	} else {
+		var repoName string
+
+		if strings.HasSuffix(urlSplit[1], ".git") {
+			repoName = urlSplit[1][:len(urlSplit[1])-len(".git")]
+		} else {
+			repoName = urlSplit[1]
+		}
+
+		githubUrl = createGithurbUrl(repoName, commitId.String())
+	}
+
+	return githubUrl, returnError
+}
+
+func createGithurbUrl(repoName, commitId string) string {
+	return "https://www.github.com/" + repoName + "/commit/" + commitId
 }
