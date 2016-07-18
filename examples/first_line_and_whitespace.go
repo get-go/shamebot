@@ -97,7 +97,7 @@ func getGithubUrlHttps(commitId *git.Oid, remoteUrl string) (string, error) {
 		repoName = repoName
 	}
 
-	githubUrl = createGithurbUrl(repoName, commitId.String())
+	githubUrl = createGithubUrl(repoName, commitId.String())
 
 	return githubUrl, returnError
 }
@@ -119,12 +119,12 @@ func getGithubUrlSSH(commitId *git.Oid, remoteUrl string) (string, error) {
 			repoName = urlSplit[1]
 		}
 
-		githubUrl = createGithurbUrl(repoName, commitId.String())
+		githubUrl = createGithubUrl(repoName, commitId.String())
 	}
 
 	return githubUrl, returnError
 }
 
-func createGithurbUrl(repoName, commitId string) string {
+func createGithubUrl(repoName, commitId string) string {
 	return "https://www.github.com/" + repoName + "/commit/" + commitId
 }
