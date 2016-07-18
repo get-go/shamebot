@@ -47,7 +47,9 @@ func main() {
 			if parse.DoesFirstLineEndWithPeriod(commit) {
 				fmt.Println(commit.Id(), "First line of commit message ends with a period.")
 			}
-			if parse.ContainsTrailingWhiteSpace(repo, commit) {
+			if contains, err := parse.ContainsTrailingWhiteSpace(repo, commit); err != nil {
+				fmt.Println("Got error checking for trailing whitespace:", err)
+			} else if contains {
 				fmt.Println(commit.Id(), "Contains trailing whitespace")
 			}
 		}

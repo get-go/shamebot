@@ -1,16 +1,20 @@
 package parse
 
 import (
+	"errors"
+	git "github.com/libgit2/git2go"
 	"regexp"
 	"strings"
-
-	git "github.com/libgit2/git2go"
 )
 
 //ContainsTrailingWhiteSpace checks for extra whitespace
-func ContainsTrailingWhiteSpace(repo *git.Repository, commit *git.Commit) bool {
+func ContainsTrailingWhiteSpace(repo *git.Repository, commit *git.Commit) (bool, error) {
 	//TODO: Error handling
-	changeset, _ := getChangeset(repo, commit)
+	changeset, err := getChangeset(repo, commit)
+	if err != nil {
+		return false, err
+	}
+
 	rc := false
 	changesetLines := strings.Split(changeset, "\n")
 
@@ -21,7 +25,7 @@ func ContainsTrailingWhiteSpace(repo *git.Repository, commit *git.Commit) bool {
 		}
 	}
 
-	return rc
+	return rc, nil
 }
 
 func endsWithWhiteSpace(s string) bool {
@@ -39,6 +43,9 @@ func getChangeset(repo *git.Repository, commit *git.Commit) (string, error) {
 	if commit.ParentCount() < 1 {
 		//TODO: Add error?
 		return "", nil
+	} else if commit.ParentCount() > 1 {
+		//TODO: Figure out how to handle merge commits. libgit2 doesn't seem to support this.
+		return "", errors.New("Changeset for merge is unsupported")
 	}
 
 	parentCommit := commit.Parent(0)
