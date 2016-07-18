@@ -1,12 +1,14 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/get-go/shamebot/parse"
 	"github.com/get-go/shamebot/poll"
 	git "github.com/libgit2/git2go"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -40,7 +42,12 @@ func main() {
 		commits, _ := poll.GetNewCommits(*repoName)
 
 		for _, commit := range commits {
-			fmt.Println(commit.Author().Name, "pushed", commit.Id(), "\""+commit.Summary()+"\"", "to", remote.Url())
+			if githubUrl, err := getGithubUrl(commit.Id(), remote.Url()); err == nil {
+				fmt.Println(commit.Author().Name, "pushed", "\""+commit.Summary()+"\"", "to", githubUrl)
+			} else {
+				fmt.Println(err)
+				fmt.Println(commit.Author().Name, "pushed", commit.Id(), "\""+commit.Summary()+"\"", "to", remote.Url())
+			}
 			if parse.IsFirstLineTooLong(commit) {
 				fmt.Println(commit.Id(), "First line of commit message is too long.")
 			}
@@ -55,4 +62,31 @@ func main() {
 		}
 		time.Sleep(5 * time.Minute)
 	}
+}
+
+//TODO: This doesn't belong in this file
+//TODO: This is SSH specific. Add support if remoteUrl is using https
+func getGithubUrl(commitId *git.Oid, remoteUrl string) (string, error) {
+	var githubUrl string
+	var returnError error
+
+	if strings.Contains(remoteUrl, "github.com") {
+		urlSplit := strings.Split(remoteUrl, ":")
+
+		if len(urlSplit) != 2 {
+			returnError = errors.New("getGithubUrl(): Unable to parse remoteUrl")
+		} else {
+			var repoName string
+
+			if strings.HasSuffix(urlSplit[1], ".git") {
+				repoName = urlSplit[1][:len(urlSplit[1])-len(".git")]
+			} else {
+				repoName = urlSplit[1]
+			}
+
+			githubUrl = "https://www.github.com/" + repoName + "/commit/" + commitId.String()
+		}
+	}
+
+	return githubUrl, returnError
 }
